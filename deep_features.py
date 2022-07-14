@@ -1,2 +1,2 @@
-# This is a stage of preprocessing, since we will need to interpret the textual features and image features
-# into numerical features that we feed into dimensionality reduction.
+# This file will mainly export functions that allow us to interpret textual / image data into vectors that can be fed into umap.
+# It will probably involve either tensorflow and / or sci-kit. We can then call these functions in preprocessing.py so it doesn't get too messy there.
