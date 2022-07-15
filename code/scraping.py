@@ -1,0 +1,2 @@
+# Since the dataset does not include images, we will need to resort to scraping the M+ site for this.
+# Moreover, the artworks and the URLs shown on the site do not share ids or whatsoever so this is also a challenge.

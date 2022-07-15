@@ -21,7 +21,7 @@ Mainly:
 - Take care to think about how we deal with arrays of data of arbritrary length
 
 ## Mapify
-The code that actually transforms the high dimensional representation of the artwork into the spehrical map. Use the umap-learn module from PyPI and spherical space. Make sure to have a function for exporting maps, since we may choose different sets of features to do mapify our data to see how the look. Export them to the ./maps directory.
+The code that actually transforms the high dimensional representation of the artwork into the spehrical map. Use the umap-learn module from PyPI and spherical space. Make sure to have a function for exporting maps, since we may choose different sets of features to do mapify our data to see how the look. Export them to the ./maps directory.R
 
 ## Visualization
 Use some interactive python modules to visualize our maps preliminarily. Will need to bridge from there to the web dev part later on.
