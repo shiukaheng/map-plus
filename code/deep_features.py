@@ -2,8 +2,10 @@
 # It will probably involve either tensorflow and / or sci-kit. We can then call these functions in preprocessing.py so it doesn't get too messy there.
 
 from sentence_transformers import SentenceTransformer, util
+from PIL import Image
 
 roberta = SentenceTransformer("all-distilroberta-v1")
+clip = SentenceTransformer("clip-ViT-B-32-multilingual-v1")
 
 # Image vectorization (via convolutional autoencoder, trained specifically on the M+ dataset)
 

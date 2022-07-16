@@ -175,3 +175,8 @@ cython_debug/
 #.idea/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
+
+# Fetched datasets
+dataset/
+scraped_images/
+.DS_Store
