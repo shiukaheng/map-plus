@@ -178,3 +178,4 @@ cython_debug/
 
 dataset/
 scraped_images/
+.DS_Store
