@@ -77,4 +77,4 @@ def preprocess(
     # Stage 4: Flatten the columns into a single vector
     flattened = np.concatenate(normalized_columns, axis=1)
 
-    return flattened, transformed_objects
+    return flattened, objects
