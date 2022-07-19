@@ -87,11 +87,11 @@ def fetch_images(objno, title, directory="./dataset/images/"):
     # Save image to directory
         r = requests.get(image_url, stream = True)
         if r.status_code == 200:
-            return (objno, (True, objno_parsed))
             r.raw.decode_content = True
-            filepath = os.path.join(os.path.expanduser(directory), objno+'.png')
+            filepath = os.path.join(os.path.expanduser(directory), objno_parsed+'.png')
             with open(filepath, 'wb') as f:
                 shutil.copyfileobj(r.raw, f)
+            return (objno, (True, objno_parsed))
         else: return (objno, (False, "Invalid image URL"))
     # No image on the M+ website or artwork link not found
     else: return (objno, (False, "Invalid image URL"))
@@ -99,7 +99,7 @@ def fetch_images(objno, title, directory="./dataset/images/"):
 # if __name__ == '__main__':
 #     # Get artworks
 #     fetch_dataset()
-#     df = pd.read_csv('./dataset/collection-data-master/objects.csv').head(10)
+#     df = pd.read_csv('./dataset/collection-data-master/objects.csv')
 #     df2 = df[['objectNumber', 'title']]
 
 #     # Scrape M+ website
