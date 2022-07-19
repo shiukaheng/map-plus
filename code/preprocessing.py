@@ -3,22 +3,78 @@
 
 from typing import Literal
 import pandas as pd
+import deep_features
+from iteration_utilities import flatten
+from sklearn.preprocessing import normalize
+import numpy as np
+from sklearn.preprocessing import StandardScaler, normalize, MinMaxScaler
 
 EMBEDDING_LANGUAGE = Literal["eng", "zh-tc", "averaged"]
+language_suffixes = {
+    "eng": "",
+    "zh-tc": "TC",
+}
 
-def preprocess(objects, constituents, embedding_language: EMBEDDING_LANGUAGE="eng"):
+def preprocess(
+    objects,
+    constituents,
+    embedding_language: EMBEDDING_LANGUAGE="eng",
+    numerical_features=["beginDate", "endDate"],
+    ml_string_features=["title", "medium", "creditLine"],
+    identifying_features=["id"]
+    ):
 
-    # Create a new blank dataframe to hold the processed data.
-    processed_df = pd.DataFrame()
+    expanded_ml_string_features = list(flatten([[f + s for f in ml_string_features] for s in language_suffixes.values()]))
+    all_features = numerical_features + expanded_ml_string_features + identifying_features
+    transformed_objects = pd.DataFrame()
 
-    # Copy all the items, but only with the id
-    processed_df["id"] = objects["id"]
+    # Stage 1: Filter NaN so all the processing works later
+    objects = objects.dropna(subset=all_features)
 
-    # Copy all the required numerical columns as is: beginDate, endDate
-    processed_df["beginDate"] = objects["beginDate"]
-    processed_df["endDate"] = objects["endDate"]
+    # Stage 2A: Copy numerical features and identifying features
+    for feature in numerical_features + identifying_features:
+        transformed_objects[feature] = objects[feature]
 
-    # Create literal column embeddings with language specified
-    # The original columns include the following:
-    # area, category, title, medium, creditLine, constituentsRole
-    # There is also a seperate version in Chinese with the same column names but with TC appended to the end: e.g., area -> areaTC
+    # Stage 2B: Embed multilingual string features
+    # TODO: Try priming the strings before embedding to give the encoder more information on what the strings are: e.g., "Paper" vs "Medium: Paper"
+    if embedding_language != "averaged":
+        suffix = language_suffixes[embedding_language]
+        for feature in ml_string_features:
+            sentences = objects[feature].tolist()
+            embeddings = deep_features.encode_sentence(sentences)
+            transformed_objects[feature+"Embedding"] = list(embeddings)
+
+    if embedding_language == "averaged":
+        raise NotImplementedError("Averaging not implemented yet")
+
+    # TODO: Stage 2C: Embed multilang list of string features
+
+    # TODO: Stage 2D: Integrate and embed constituents information
+
+    # Stage 3: Discard identifying features and flatten each row into a single vector
+    flattened = transformed_objects.drop(identifying_features, axis=1).values
+    columns = list(flattened.transpose()) # Transpose to get a list of columns
+    columns = [np.array(c.tolist()) for c in columns] # Fix nested np.arrays, so now all columns are np.arrays
+    
+
+    # Normalize each column
+    normalized_columns = []
+    for c in columns:
+        if c.ndim == 1:
+            normalized_columns.append(
+                normalize(c.reshape(-1, 1), norm='l2', axis=1)
+            )
+        else: # Here we are using dimension > 1 as a proxy that it is an embedding.. not ideal, but it works for now
+            normalized_columns.append(
+                normalize(c, norm='l2', axis=1)
+            )
+
+    # - For numerical features, simply normalize
+    # - For embedded features, perform normalization, then PCA before vectorization
+    #   - Alternatively, perform normalization, then perform PCA after vectorization
+    # - For numerical features, simply normalize
+
+    # Stage 4: Flatten the columns into a single vector
+    flattened = np.concatenate(normalized_columns, axis=1)
+
+    return flattened, transformed_objects
