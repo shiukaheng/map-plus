@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+      // Add .tsx / .jsx support
+      "strictNullChecks": true,
+      "jsx": "react-jsx",
+      "target": "es5",
+    }
+    
+}
