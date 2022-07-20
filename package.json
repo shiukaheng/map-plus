@@ -1,5 +1,5 @@
 {
-  "name": "portfolio",
+  "name": "map-plus",
   "version": "1.0.0",
   "main": "index.js",
   "author": "Heng <31088159+shiukaheng@users.noreply.github.com>",
@@ -29,5 +29,6 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite serve"
-  }
+  },
+  "repository": "https://github.com/shiukaheng/map-plus.git"
 }
