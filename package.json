@@ -31,7 +31,10 @@
   },
   "scripts": {
     "build": "vite build",
-    "dev": "vite serve"
+    "dev": "vite serve",
+    "export-python-env": "conda env export -n map-plus > map-plus.yml",
+    "import-python-env": "conda env create -f map-plus.yml",
+    "generate-data": "cd ./code && python main.py && cd ../"
   },
   "repository": "https://github.com/shiukaheng/map-plus.git"
 }
