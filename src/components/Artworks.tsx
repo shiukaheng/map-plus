@@ -1,10 +1,12 @@
 import dataURL from '../../exported/combined.json?url'
-import { useState, useEffect, useRef, Fragment } from 'react'
-import { extend, useFrame, useLoader } from '@react-three/fiber'
+import { useState, useEffect, useRef, Fragment, useMemo } from 'react'
+import { extend, useFrame, useLoader, useThree, Vector3 } from '@react-three/fiber'
 import { FileLoader, Float32BufferAttribute, BufferGeometry, Points, PointsMaterial, ShaderMaterial, Color, UniformsUtils, UniformsLib } from 'three'
 import { IndexHtmlTransform } from 'vite'
 import frag from "./materials/artworkPoints.frag"
 import vert from "./materials/artworkPoints.vert"
+import { Billboard, Image } from '@react-three/drei'
+import DistanceWorker from "./workers/distanceHelper?worker"
 
 function useMapifiedData(url: string) {
     const points = useLoader(FileLoader, dataURL, (loader) => {
@@ -41,10 +43,6 @@ function useArtworkGeometry(points) {
     geometry.setAttribute('position', new Float32BufferAttribute(pointsArray, 3))
     geometry.setAttribute('artwork_color', new Float32BufferAttribute(colorsArray, 3))
     return geometry
-}
-
-export function ArtworkDetail({id, displayDistance=0.1}) {
-    // Displays a preview of the artwork, 
 }
 
 function ArtworkPreviewPoints({data}) {
@@ -88,43 +86,111 @@ function ArtworkPreviewPoints({data}) {
     )
 }
 
-function IndividualArtwork({id}) {
-    return null
+function IndividualArtwork({data, index}: {data: any, index: number}) {
+    const {image_url, imagePosition, position} = useMemo(()=>{
+        const actualPostion = [data["mapify_x"][index], data["mapify_y"][index], data["mapify_z"][index]] as [number, number, number]
+        return {
+            image_url: data["imageURL"][index],
+            imagePosition: (actualPostion).map(x=>x*1.01),
+            position: actualPostion
+        }
+    }, [data, index])
+    const imageRef = useRef(null)
+    // useEffect(()=>{
+    //     if(imageRef.current){
+    //         imageRef.current.material.depthTest = false
+    //         imageRef.current.renderOrder = 100
+    //     }
+    // })
+    return (
+        ((image_url === null) || (image_url === undefined)) ? null : (
+            <Billboard position={imagePosition} scale={0.1}>
+                <Image url={image_url} ref={imageRef}/>
+            </Billboard>
+        )
+    )
 }
 
-function ArtworkDetails({data, visibleArtworkIDs}: {
+function ArtworkDetails({data, visibleArtworkIndices=[], maxArtworksVisible=50}: {
     data: any,
-    visibleArtworkIDs: string[]
+    visibleArtworkIndices: number[]
 }) {
-    const previousArtworkIDs = useRef<string[]>([])
-    const displayObjectRef = useRef({}) // Object for keeping track of artwork objects
     const groupRef = useRef(null)
+    const workerRef = useRef<Worker>()
+    const [nearbyArtworkIndices, setNearbyArtworkIndices] = useState<number[]>([])
+    const camera = useThree((context) => context.camera)
     useEffect(()=>{
-        const newIDs = visibleArtworkIDs.filter(id => !previousArtworkIDs.current.includes(id))
-        const removedIDs = previousArtworkIDs.current.filter(id => !visibleArtworkIDs.includes(id))
-        newIDs.forEach((id)=>{
-            // Create a new artwork object
-            // Update the displayObjectRef
+        workerRef.current = new DistanceWorker() as Worker
+        workerRef.current.postMessage({
+            "type": "updatePoints",
+            "data": {
+                x: data["mapify_x"],
+                y: data["mapify_y"],
+                z: data["mapify_z"],
+            }
         })
-        removedIDs.forEach((id)=>{
-            // Remove the artwork object
-            // Update the displayObjectRef
-        })
+        workerRef.current.onmessage = (e)=>{
+            // On message, print the message
+            const distances = e.data.data
+            const dt = e.data.dt
+            const query = camera.position.clone().normalize().toArray()
+            workerRef.current?.postMessage({
+                "type": "updateQueryPoint",
+                "data": query
+            })
+            // The return value is an array of [index, distance] pairs sorted by distance
+            // Set top 50 closest points
+            const nearbyArtworkIndices = distances.slice(0, maxArtworksVisible).map(x=>x[0])
+            setNearbyArtworkIndices(nearbyArtworkIndices)
+
+            // Algorithm: 
+
+            // There are only a limited number of slots for nearby artworks as defined by maxArtworksVisible
+            // We will use a custom component for each slot, which will fade out the old artwork and fade in the 
+            // new artwork when the id changes. The assignment of id -> slot will be kept by a map.
+
+            // We use sigmoid to define a spawn / despawn probability based on distance and camera distance: we will call this probability SP and DP respectively.
+            // On every distance update, we decide which artwork to despawn, and which artworks to replace as follows:
+            // For each slot we sample DP to be either true or false. If DP is true, we will need to replace the artwork in the slot.
+            // As to which artwork we fill the now empty slot with, we will sample SP for all artworks excluding artworks already in the slot as possible candidates.
+            // Then, there will most likely be more artworks to spawn than slots to fill. So, we randomly sample from the list of artworks to spawn for each slot.
+        }
+        return ()=>{
+            if (workerRef.current) {
+                workerRef.current.terminate()
+            }
+        }
     }, [])
     return (
         <group ref={groupRef}>
+            {
+                nearbyArtworkIndices.map((index) => 
+                    <IndividualArtwork key={index} data={data} index={index}/>
+                )
+            }
         </group>
     )
+}
+
+function sampleFromArray(array: any[], sampleSize: number): any[] {
+    const sample = []
+    for (let i = 0; i < sampleSize; i++) {
+        sample.push(array[Math.floor(Math.random() * array.length)])
+    }
+    return sample
 }
 
 export function ArtworkGlobe() {
     // Build geometry from points
     const data = useMapifiedData(dataURL)// points is a parsed JSON object
-    const [visibleArtworkIDs, setVisibleArtworkIDs] = useState<string[]>([])
+    const [visibleArtworkIndices, setVisibleArtworkIndices] = useState<number[]>([])
+    // useEffect(()=>{
+    //     setVisibleArtworkIndices(sampleFromArray(Object.keys(data["id"]), 500))
+    // }, [])
     return (
         <Fragment>
             <group>
-                <ArtworkDetails data={data} visibleArtworkIDs={visibleArtworkIDs}/>
+                <ArtworkDetails data={data} visibleArtworkIndices={visibleArtworkIndices}/>
                 <ArtworkPreviewPoints data={data}/>
             </group>
         </Fragment>
