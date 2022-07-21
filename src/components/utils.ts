@@ -1,4 +1,5 @@
 import { useLoader } from "@react-three/fiber"
+import { useMemo } from "react"
 import { BufferGeometry, FileLoader, Float32BufferAttribute } from "three"
 
 export function useMapifiedData(url: string) {
@@ -16,7 +17,7 @@ export function hexToRGB(hexString): [number, number, number] {
     return [r, g, b]
 }
 
-export function useArtworkGeometry(points) {
+function _useArtworkGeometry(points) {
     window.points = points
     // Build a geometry from the points
     const geometry = new BufferGeometry()
@@ -36,6 +37,12 @@ export function useArtworkGeometry(points) {
     geometry.setAttribute('position', new Float32BufferAttribute(pointsArray, 3))
     geometry.setAttribute('artwork_color', new Float32BufferAttribute(colorsArray, 3))
     return geometry
+}
+
+export function useArtworkGeometry(points) {
+    return useMemo(()=>{
+        return _useArtworkGeometry(points)
+    }, [points])
 }
 
 export type Slot = {
