@@ -62,6 +62,7 @@ export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=5, 
                 return sampleProbability(prob)
             })
             console.log(despawnIndices)
+            
         }
     })
     return (
