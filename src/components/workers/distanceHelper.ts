@@ -6,7 +6,7 @@ var points: {x: object, y:object, z:object} = {
     y: [],
     z: []
 }
-var interval = 250;
+var interval = 100;
 
 addEventListener('message', (e) => {
     const message = e.data
@@ -29,12 +29,10 @@ setInterval(() => {
             const x = points.x[index];
             const y = points.y[index];
             const z = points.z[index];
-            return [index, Math.sqrt(Math.pow(x - queryPoint[0], 2) + Math.pow(y - queryPoint[1], 2) + Math.pow(z - queryPoint[2], 2))]
-        }).sort(
-            (a, b) => a[1] - b[1]
-        );
+            return Math.sqrt(Math.pow(x - queryPoint[0], 2) + Math.pow(y - queryPoint[1], 2) + Math.pow(z - queryPoint[2], 2))
+        });
         postMessage({type: 'updateDistance', data: distances, dt: interval})
     } else {
-        postMessage({type: 'updateDistance', data: [], dt: 0})
+        postMessage({type: 'updateDistance', data: null, dt: 0})
     }
 }, interval);

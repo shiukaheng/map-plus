@@ -5,8 +5,9 @@ import frag from "../materials/artworkPoints.frag"
 import vert from "../materials/artworkPoints.vert"
 import { useRef } from "react"
 
-export function ArtworkPreviewPoints({data}) {
-    const geometry = useArtworkGeometry(data)
+export function ArtworkPreviewPoints({data, distancesRef}:
+    {data: any, distancesRef: React.MutableRefObject<number[] | null>}) {
+    const geometry = useArtworkGeometry(data, distancesRef)
     const matRef = useRef<ShaderMaterial>(null)
     useFrame((state, dt)=>{
         if(matRef.current){

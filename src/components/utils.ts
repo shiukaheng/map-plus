@@ -1,12 +1,32 @@
-import { useLoader } from "@react-three/fiber"
+import { useFrame, useLoader } from "@react-three/fiber"
 import { useMemo } from "react"
 import { BufferGeometry, FileLoader, Float32BufferAttribute } from "three"
+import gamma from "gamma"
+
+function objectToList(obj: any): any[] {
+    // Somehow the imported arrays are instead an object with numbers as keys. This function converts them to a list.
+    const list: any[] = []
+    for (const key of Object.keys(obj)) {
+        list[key] = obj[key]
+    }
+    // Filter missing indices
+    return list.filter((_, i) => i in list)
+}
 
 export function useMapifiedData(url: string) {
-    const points = useLoader(FileLoader, url, (loader) => {
+    const points = (useLoader(FileLoader, url, (loader) => {
         loader.setResponseType('json')
-    })
-    return points
+    })) as object
+    // Fix the fact that the columns are in a dict with numeric keys instead of an array
+    const points_fixed = useMemo(() => {
+        const columns = Object.keys(points)
+        const modified_points = {}
+        for (const column of columns) {
+            modified_points[column] = objectToList(points[column])
+        }
+        return modified_points
+    }, [points])
+    return points_fixed
 }
 
 export function hexToRGB(hexString): [number, number, number] {
@@ -21,12 +41,12 @@ function _useArtworkGeometry(points) {
     window.points = points
     // Build a geometry from the points
     const geometry = new BufferGeometry()
-    const pointsArray = []
+    const pointsArray: number[] = []
     const colorsArray: number[] = []
+    const queryDistanceArray: number[] = []
     for (const i of Object.keys(points["id"])) {
-        pointsArray.push(points["mapify_x"][i])
-        pointsArray.push(points["mapify_y"][i])
-        pointsArray.push(points["mapify_z"][i])
+        pointsArray.push(points["mapify_x"][i], points["mapify_y"][i], points["mapify_z"][i])
+        queryDistanceArray.push(0)
         if (points["colorPredominant"][i] !== null) {
             const colorRGB = hexToRGB(JSON.parse(points["colorPredominant"][i])[0]["color"]) as [number, number, number]
             colorsArray.push(...colorRGB)
@@ -36,13 +56,26 @@ function _useArtworkGeometry(points) {
     }
     geometry.setAttribute('position', new Float32BufferAttribute(pointsArray, 3))
     geometry.setAttribute('artwork_color', new Float32BufferAttribute(colorsArray, 3))
+    geometry.setAttribute('query_distance', new Float32BufferAttribute(queryDistanceArray, 1))
     return geometry
 }
 
-export function useArtworkGeometry(points) {
-    return useMemo(()=>{
+export function useArtworkGeometry(points, distancesRef: React.MutableRefObject<number[] | null>) {
+    const geometry = useMemo(()=>{
         return _useArtworkGeometry(points)
     }, [points])
+    useFrame(()=>{
+        if (distancesRef.current && geometry) {
+            // console.log(distancesRef)
+            // Update the geometry's query_distance attribute using the distances
+            const queryDistanceArray = geometry.attributes.query_distance.array
+            for (let i = 0; i < queryDistanceArray.length; i++) {
+                queryDistanceArray[i] = distancesRef.current[i]
+            }
+            geometry.attributes.query_distance.needsUpdate = true
+        }
+    })
+    return geometry
 }
 
 export type Slot = {
@@ -53,9 +86,9 @@ export type Slot = {
 function raw_gate(x: number): number {
     // Raw gating function based on cos
     if (x < 0) {
-        return 0
-    } else if (x > 1) {
         return 1
+    } else if (x > 1) {
+        return 0
     } else {
         return Math.cos(x * Math.PI) / 2 + 0.5
     }
@@ -97,3 +130,18 @@ export function sampleFromArray(array: any[], samples=10): any {
     }
     return sampled_items
 }
+
+// Poisson distribution for calculating despawn rates
+/**
+ * @param samplingTimeWindow The time window we want query the probability of a despawn event
+ * @param despawnRatePerSecond The despawn rate (How many despawn events per second are expected)
+ * @returns The probability of a despawn event in the given time window
+ */
+export function getDespawnProbability(samplingTimeWindow: number, despawnRatePerSecond: number=0.5): number {
+    if (despawnRatePerSecond === 0) {
+        return 0
+    }
+    return 1 - Math.exp(-despawnRatePerSecond * samplingTimeWindow)
+}
+
+window.getDespawnProbability = getDespawnProbability

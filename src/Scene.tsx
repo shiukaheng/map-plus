@@ -10,7 +10,7 @@ export function Scene() {
     return (
         <Fragment>
             <ambientLight/>
-            <fog attach="fog" color="black" near={1} far={2.5}/>
+            {/* <fog attach="fog" color="black" near={1} far={2.5}/> */}
             {/* <fogExp2 attach="fog" color="black" density={0.5}/> */}
             <ArtworkGlobe/>
             {/* <mesh>

@@ -11,12 +11,6 @@ export function IndividualArtwork({data, index, visible=true}: {data: any, index
         }
     }, [data, index])
     const imageRef = useRef(null)
-    // useEffect(()=>{
-    //     if(imageRef.current){
-    //         imageRef.current.material.depthTest = false
-    //         imageRef.current.renderOrder = 100
-    //     }
-    // })
     return (
         ((image_url === null) || (image_url === undefined)) ? null : (
             <Billboard position={imagePosition} scale={0.1}>

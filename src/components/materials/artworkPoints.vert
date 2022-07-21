@@ -7,6 +7,7 @@ uniform float distortion_intensity;
 uniform float distortion_speed;
 // Read artwork_color attribute from the vertex shader.
 attribute vec3 artwork_color;
+attribute float query_distance;
 // Pass the color to the fragment shader.
 varying vec3 vColor;
 
@@ -163,10 +164,14 @@ float snoiseFractal(vec3 m) {
 				+0.0666667* snoise(8.0*m);
 }
 
+vec3 mix(vec3 a, vec3 b, float t) {
+  return a + t * (b - a);
+}
+
 void main() {
     // Get direction vector from center to vertex
     vec3 fromCenter = position - vec3(0.0, 0.0, 0.0);
-    vec4 mvPosition = modelViewMatrix * vec4( position + (snoise(vec4(position * distortion_scale, time * distortion_speed)) * fromCenter * distortion_intensity), 1.0 );
+    vec4 mvPosition = modelViewMatrix * vec4( position + ((snoise(vec4(position * distortion_scale, time * distortion_speed)) ) * fromCenter * distortion_intensity), 1.0 );
 
     gl_PointSize = size * ( 300.0 / -mvPosition.z );
     // gl_PointSize = size;
@@ -174,7 +179,8 @@ void main() {
     
 
     gl_Position = projectionMatrix * mvPosition;
-    vColor = artwork_color;
+    // vColor = artwork_color;
+    vColor = mix(vec3(0.,1.,0.), vec3(1.,0.,1.), query_distance);
     #include <fog_vertex>
 
 }
