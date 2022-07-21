@@ -1,6 +1,6 @@
 import { useThree } from "@react-three/fiber";
 import { Fragment } from "react";
-import { ArtworkGlobe } from "./components/Artworks";
+import { ArtworkGlobe } from "./components/ArtworkGlobe";
 
 export function Scene() {
     useThree(({camera}) => {
