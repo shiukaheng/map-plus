@@ -36,11 +36,9 @@ function ImageSlotSingle({imagePosition, image_url, visible=true, imageIndex, on
     return (
         <animated.group position={imagePosition} scale={scale}>
             <Billboard>
-                <Suspense>
-                    {image_url === null ? null : (
-                        <Image url={image_url} scale={0.1}/>
-                    )}
-                </Suspense>
+                {image_url === null ? null : (
+                    <Image url={image_url} scale={0.1}/>
+                )}
             </Billboard>
         </animated.group>
     )
@@ -58,7 +56,7 @@ export function ImageSlot({artworkIndex, data}:{artworkIndex: number, data: Artw
         const actualPostion = [data["mapify_x"][artworkIndex], data["mapify_y"][artworkIndex], data["mapify_z"][artworkIndex]] as [number, number, number]
         return {
             image_url: data["imageURL"][artworkIndex],
-            imagePosition: (actualPostion).map(x=>x*1.01) as [number, number, number],
+            imagePosition: (actualPostion).map(x=>x*(1 + (Math.random() * 0.075))) as [number, number, number],
             position: actualPostion
         }
     }, [data, artworkIndex])
@@ -79,6 +77,7 @@ export function ImageSlot({artworkIndex, data}:{artworkIndex: number, data: Artw
                     }/>
                 ))
             }
+            {/* <ImageSlotSingle key={artworkIndex} {...{imagePosition, image_url, visible: true, imageIndex: artworkIndex}}/> */}
         </group>
     )
 }

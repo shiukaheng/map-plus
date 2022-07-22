@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useRef, useState } from "react"
+import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
 
 import { DP, gate, getDespawnProbability, sampleFromArray, sampleProbability, Slot, SP, useInterval } from "../utils"
@@ -30,7 +30,7 @@ function useArtworkSlots(maxArtworksVisible) {
     return {artworkSlots, setArtworkSlots}
 }
 
-export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=30, dropoffStart=0.4, dropoffEnd=0.7, updateInterval=250}: {
+export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=20, dropoffStart=0.4, dropoffEnd=0.7, updateInterval=100}: {
     data: any,
     distancesRef: MutableRefObject<number[] | null>,
     visibleArtworkIndices?: number[],
@@ -116,7 +116,9 @@ export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=30,
                         return null
                     }
                     return (
-                        <ImageSlot artworkIndex={slot.art_index} data={data} key={slot.slot_index}/>
+                        <Suspense>
+                           <ImageSlot artworkIndex={slot.art_index} data={data} key={slot.slot_index}/>
+                        </Suspense>
                     )
                 }
                 )

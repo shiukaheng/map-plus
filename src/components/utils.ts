@@ -35,6 +35,15 @@ export function useMapifiedData(url: string): ArtworkData {
         for (const column of columns) {
             modified_points[column] = objectToList(points[column])
         }
+        // Drop indices where modified_points["imageURL"] is null
+        for (const i of Object.keys(modified_points["imageURL"])) {
+            if (modified_points["imageURL"][i] === null) {
+                for (const column of columns) {
+                    modified_points[column].splice(i, 1)
+                }
+            }
+        }
+                
         return modified_points
     }, [points])
     return points_fixed as ArtworkData
@@ -141,6 +150,8 @@ export function sampleFromArray(array: any[], samples=10): any {
     }
     return sampled_items
 }
+
+// window.sampleFromArray = sampleFromArray 
 
 // Poisson distribution for calculating despawn rates
 /**
