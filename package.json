@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.7",
+    "firebase-tools": "^11.3.0",
     "postcss": "^8.4.13",
     "tailwindcss": "^3.0.24",
     "vite-plugin-glsl": "^0.3.0"
@@ -35,7 +36,8 @@
     "dev": "vite serve",
     "export-python-env": "conda env export -n map-plus > map-plus.yml",
     "import-python-env": "conda env create -f map-plus.yml",
-    "generate-data": "cd ./code && python main.py && cd ../"
+    "generate-data": "cd ./code && python main.py && cd ../",
+    "deploy": "yarn build && firebase deploy --only hosting"
   },
   "repository": "https://github.com/shiukaheng/map-plus.git"
 }
