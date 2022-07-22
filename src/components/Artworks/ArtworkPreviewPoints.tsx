@@ -12,7 +12,7 @@ export function ArtworkPreviewPoints({data, distancesRef}:
     useFrame((state, dt)=>{
         if(matRef.current){
             // console.log(matRef.current.uniforms.time.value)
-            matRef.current.uniforms.time.value += dt
+            matRef.current.uniforms.time.value = state.clock.elapsedTime
         }
     })
     return (

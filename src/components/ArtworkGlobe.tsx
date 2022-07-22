@@ -1,6 +1,5 @@
-import dataURL from '../../exported/combined.json?url'
 import { useState, Fragment, useRef, useEffect } from 'react'
-import { useMapifiedData } from './utils'
+import { ArtworkData, useMapifiedData } from './utils'
 import { ArtworkPreviewPoints } from './Artworks/ArtworkPreviewPoints'
 import { NearbyArtworkDetails } from './Artworks/NearbyArtworkDetails'
 import DistanceWorker from "./workers/distanceHelper?worker"
@@ -39,9 +38,8 @@ function DistanceCalculator({data, setDistancesArray}) {
     return null
 }
  
-export function ArtworkGlobe() {
+export function ArtworkGlobe({data}:{data: ArtworkData}) {
     // Build geometry from points
-    const data = useMapifiedData(dataURL)// points is a parsed JSON object
     const [visibleArtworkIndices, setVisibleArtworkIndices] = useState<number[]>([])
     // Ref for keeping distance arrays
     const distancesRef = useRef<number[] | null>(null)

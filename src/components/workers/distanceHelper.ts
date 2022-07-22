@@ -16,7 +16,6 @@ addEventListener('message', (e) => {
             break;
         case 'updatePoints':
             points = message.data;
-            console.log(points);
             break;
     }
 })

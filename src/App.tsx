@@ -1,14 +1,17 @@
-import { OrbitControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { Scene } from "./Scene";
+import dataURL from '../exported/combined.json?url'
+import { ArtworkGlobeUI } from './components/ArtworkGlobeUI'
+import { useMapifiedData } from './components/utils'
 
-export function App() {
+export default function App() {
+    const data = useMapifiedData(dataURL)
     return (
-        <div className="absolute w-full h-full bg-black">
-            <Canvas className="w-full h-full">
-                <OrbitControls maxDistance={2} minDistance={1.07} zoomSpeed={0.2} enablePan={false} rotateSpeed={0.5} screenSpacePanning={false}/>
-                <Scene/>
-            </Canvas>
+        <div className="absolute w-full h-full bg-black text-white">
+            {/* <div className='absolute w-full h-full z-10 pointer-events-none p-8 md:p-16'>
+                <div className='text-6xl'>
+                    MAP+
+                </div>
+            </div> */}
+            <ArtworkGlobeUI data={data}/>
         </div>
     )
 }

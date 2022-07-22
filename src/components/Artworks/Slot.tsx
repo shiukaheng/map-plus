@@ -21,7 +21,7 @@ function ImageSlotSingle({imagePosition, image_url, visible=true, imageIndex, on
         setActuallyVisible(visible)
     }, [visible])
     const {scale} = useSpring({scale: actuallyVisible ? 1 : 0, onRest: ()=>{
-            // console.log("Gone!", imageIndex)
+
             if (!visibleRef.current) {
                 onDisappear(imageIndex)
             }},
@@ -65,14 +65,14 @@ export function ImageSlot({artworkIndex, data}:{artworkIndex: number, data: Artw
         // Set all previous images to invisible and add new image when new image is loaded
         setImageStateArray(imageStateArray.map(imageState=>({...imageState, visible: false})).concat([{imagePosition, image_url, visible: true, imageIndex: artworkIndex}]))
     }, [artworkIndex])
-    // console.log(imageStateArray.length)
+    // console.log("ImageSlot", imageStateArray)
     return (
         <group>
             {
                 imageStateArray.map((imageState)=>(
                     <ImageSlotSingle key={imageState.imageIndex} {...imageState} onDisappear={(id)=>{
                         // Remove image from array
-                        setImageStateArray(imageStateArray.filter(imageState=>imageState.imageIndex !== id))
+                        setImageStateArray((imageStateArray)=>imageStateArray.filter(imageState=>((imageState.imageIndex !== id)&&(imageState.visible)))) // Hacky to be culling non-visible images, but works for now
                     }
                     }/>
                 ))

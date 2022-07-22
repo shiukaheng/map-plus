@@ -30,7 +30,7 @@ function useArtworkSlots(maxArtworksVisible) {
     return {artworkSlots, setArtworkSlots}
 }
 
-export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=20, dropoffStart=0.4, dropoffEnd=0.7, updateInterval=100}: {
+export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=20, dropoffStart=0.4, dropoffEnd=0.6, updateInterval=100}: {
     data: any,
     distancesRef: MutableRefObject<number[] | null>,
     visibleArtworkIndices?: number[],
@@ -116,8 +116,8 @@ export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=20,
                         return null
                     }
                     return (
-                        <Suspense>
-                           <ImageSlot artworkIndex={slot.art_index} data={data} key={slot.slot_index}/>
+                        <Suspense key={slot.slot_index}>
+                           <ImageSlot artworkIndex={slot.art_index} data={data}/>
                         </Suspense>
                     )
                 }
