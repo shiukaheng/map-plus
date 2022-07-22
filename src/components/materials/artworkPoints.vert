@@ -179,8 +179,8 @@ void main() {
     
 
     gl_Position = projectionMatrix * mvPosition;
-    // vColor = artwork_color;
-    vColor = mix(vec3(0.,1.,0.), vec3(1.,0.,1.), query_distance);
+    vColor = artwork_color;
+    // vColor = mix(vec3(0.,1.,0.), vec3(1.,0.,1.), query_distance);
     #include <fog_vertex>
 
 }

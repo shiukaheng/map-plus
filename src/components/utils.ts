@@ -1,5 +1,5 @@
 import { useFrame, useLoader } from "@react-three/fiber"
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { BufferGeometry, FileLoader, Float32BufferAttribute } from "three"
 import gamma from "gamma"
 
@@ -13,7 +13,18 @@ function objectToList(obj: any): any[] {
     return list.filter((_, i) => i in list)
 }
 
-export function useMapifiedData(url: string) {
+export type ArtworkData = {
+    // Let any key be an array of values
+    id: string[]
+    mapify_x: number[]
+    mapify_y: number[]
+    mapify_z: number[]
+    objectNumber: string[]
+    imageURL: string[]
+    [key: string]: any[]
+}
+
+export function useMapifiedData(url: string): ArtworkData {
     const points = (useLoader(FileLoader, url, (loader) => {
         loader.setResponseType('json')
     })) as object
@@ -26,7 +37,7 @@ export function useMapifiedData(url: string) {
         }
         return modified_points
     }, [points])
-    return points_fixed
+    return points_fixed as ArtworkData
 }
 
 export function hexToRGB(hexString): [number, number, number] {
@@ -142,6 +153,24 @@ export function getDespawnProbability(samplingTimeWindow: number, despawnRatePer
         return 0
     }
     return 1 - Math.exp(-despawnRatePerSecond * samplingTimeWindow)
+}
+
+export function useInterval(callback: () => void, delay: number) {
+    const savedCallback = useRef<() => void>()
+    // Remember the latest callback.
+    useEffect(() => {
+        savedCallback.current = callback
+    }, [callback])
+    // Set up the interval.
+    useEffect(() => {
+        function tick() {
+            savedCallback.current && savedCallback.current()
+        }
+        if (delay !== null) {
+            let id = setInterval(tick, delay)
+            return () => clearInterval(id)
+        }
+    }, [delay])
 }
 
 window.getDespawnProbability = getDespawnProbability

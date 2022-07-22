@@ -38,7 +38,7 @@ function DistanceCalculator({data, setDistancesArray}) {
     }, [])
     return null
 }
-
+ 
 export function ArtworkGlobe() {
     // Build geometry from points
     const data = useMapifiedData(dataURL)// points is a parsed JSON object
@@ -48,7 +48,7 @@ export function ArtworkGlobe() {
     return (
         <Fragment>
             <group>
-                <NearbyArtworkDetails data={data} distancesRef={distancesRef}/>
+                <NearbyArtworkDetails data={data} distancesRef={distancesRef} updateInterval={250}/>
                 <ArtworkPreviewPoints data={data} distancesRef={distancesRef}/>
                 <DistanceCalculator data={data} setDistancesArray={(distance)=>{
                     distancesRef.current = distance
