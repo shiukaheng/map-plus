@@ -30,7 +30,7 @@ function useArtworkSlots(maxArtworksVisible) {
     return {artworkSlots, setArtworkSlots}
 }
 
-export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=20, dropoffStart=0.4, dropoffEnd=0.6, updateInterval=100}: {
+export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=20, dropoffStart=0.7, dropoffEnd=1, updateInterval=100}: {
     data: any,
     distancesRef: MutableRefObject<number[] | null>,
     visibleArtworkIndices?: number[],
@@ -54,7 +54,10 @@ export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=20,
                     return 0
                 }
                 // If the slot is not empty, calculate the despawn rate
-                const dp = 1-gate(distances[slot.art_index] * 2/camera.position.length() , dropoffStart, dropoffEnd)
+                var dp = 1-gate(distances[slot.art_index] * 1/(camera.position.length()-1) , dropoffStart, dropoffEnd)
+                if (isNaN(dp)) {
+                    dp = 1 // Hack. Not idea why it is NaN TODO!
+                }
                 return dp
             })
             // console.log(despawnRate)
@@ -78,7 +81,7 @@ export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=20,
             })
             // Now we set the new slots.
             // Enumerate
-            var replacementCandidates = distances.map((d, index)=>([gate(d * 2/camera.position.length() , dropoffStart, dropoffEnd), index])) 
+            var replacementCandidates = distances.map((d, index)=>([gate(d * 1/(camera.position.length()-1) , dropoffStart, dropoffEnd), index])) 
             // Filter (using sampleProbability)
             replacementCandidates = replacementCandidates.filter(([sp, index])=>{
                 return sampleProbability(sp)
@@ -86,20 +89,26 @@ export function NearbyArtworkDetails({data, distancesRef, maxArtworksVisible=20,
             // Map to indices
             const replacementCandidateIndices = replacementCandidates.map(([sp, index])=>{
                 return index
-            })
+            }).filter(
+                (index)=>{
+                    return newSlots.filter((slot)=>{
+                        return slot.art_index === index
+                    }).length === 0
+                }
+            )
             // Count number of empty slots
             const emptySlots = newSlots.filter((slot)=>{
-                return slot.art_index === null
+                return slot.art_index === null || slot.art_index === undefined// I have no idea why some are undefined.
             }).length
             // Sample uniformly the amount of despawned items from the replacement indices
             const replacementIndices = sampleFromArray(replacementCandidateIndices, emptySlots)
             // console.log(replacementIndices)
-            // Fill the new slots with the replacement indices using pop
+            // Fill the new slots with the replacement indices
             newSlots = newSlots.map((slot, i)=>{
                 if (slot.art_index === null) {
                     return {
                         slot_index: slot.slot_index,
-                        art_index: replacementIndices.pop()
+                        art_index: replacementIndices[i]
                     }
                 }
                 return slot

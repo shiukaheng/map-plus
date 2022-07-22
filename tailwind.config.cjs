@@ -7,8 +7,8 @@ module.exports = {
   theme: {
     extend: {},
     fontFamily: {
-      'display': 'Nighty',
-      'sans': 'Archivo Black'
+      // 'display': 'Nighty',
+      'sans': 'Archivo'
     }
   },
   plugins: [],

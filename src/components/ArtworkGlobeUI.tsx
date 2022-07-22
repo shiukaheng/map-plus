@@ -8,7 +8,18 @@ import { OrbitControls as OrbitControlsPrim } from "three-stdlib";
 
 const defaultPos: [number, number, number] = [0,0,2]
 
-export function ArtworkGlobeUI({targetCameraPosition=defaultPos, data}:{targetCameraPosition?: [number, number, number], data: ArtworkData}) {
+function CameraSetter({cameraRef}) {
+    const { camera } = useThree()
+    useEffect(()=>{
+        if (cameraRef) {
+            cameraRef.current = camera
+        }
+    }
+    , [cameraRef])
+    return null
+}
+
+export function ArtworkGlobeUI({targetCameraPosition=defaultPos, data, cameraRef}:{targetCameraPosition?: [number, number, number], data: ArtworkData, cameraRef?: React.MutableRefObject<THREE.PerspectiveCamera | undefined>}) {
     const [inAnimation, setInAnimation] = useState(false);
     useEffect(()=>{
         setInAnimation(true);
@@ -16,6 +27,7 @@ export function ArtworkGlobeUI({targetCameraPosition=defaultPos, data}:{targetCa
     return (
         <Canvas className="w-full h-full">
             <Scene data={data}/>
+            <CameraSetter cameraRef={cameraRef}/>
             {inAnimation ? <AnimatedControls targetPosition={targetCameraPosition} onFinish={()=>{setInAnimation(false)}}/> : <OrbitControlsModified minDistance={1.07} maxDistance={2} rotateSpeed={0.25}/>}
             {/* <OrbitControlsHotfix orbitRef={orbitRef}/> */}
         </Canvas>
