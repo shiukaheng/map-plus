@@ -2,8 +2,10 @@
 
 import { useSpring, animated } from "@react-spring/three";
 import { Billboard, Image } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { ArtworkData } from "../utils";
+import { Object3D } from "three";
+import { ArtworkData, gate } from "../utils";
 
 function ImageSlotSingle({imagePosition, image_url, visible=true, imageIndex, onDisappear=(index)=>{}}: {
     imagePosition: [number, number, number],
@@ -33,11 +35,19 @@ function ImageSlotSingle({imagePosition, image_url, visible=true, imageIndex, on
         }
         }
     );
+    const camera = useThree((c)=>c.camera)
+    const imageRef = useRef<Object3D>()
+    useFrame(()=>{
+        if (imageRef.current) {
+            const scalarScale = (camera.position.length() - 1) * 0.1 + gate(camera.position.length() - 1, 0.1, 0.5) * 0.05
+            imageRef.current.scale.set(scalarScale, scalarScale, scalarScale)
+        }
+    })
     return (
         <animated.group position={imagePosition} scale={scale}>
             <Billboard>
                 {image_url === null ? null : (
-                    <Image url={image_url} scale={0.1}/>
+                    <Image url={image_url} scale={0.1} ref={imageRef}/>
                 )}
             </Billboard>
         </animated.group>
