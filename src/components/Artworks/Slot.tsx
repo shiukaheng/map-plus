@@ -27,9 +27,9 @@ function ImageSlotSingle({imagePosition, image_url, visible=true, imageIndex, on
             }},
         config: {
             mass: 0.5,
-            tension: 100,
+            tension: 200,
             friction: 50,
-            precision: 0.001
+            precision: 0.01
         }
         }
     );
