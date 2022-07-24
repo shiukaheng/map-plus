@@ -28,7 +28,7 @@ export function ArtworkGlobeUI({targetCameraPosition=defaultPos, data, cameraRef
         <Canvas className="w-full h-full">
             <Scene data={data}/>
             <CameraSetter cameraRef={cameraRef}/>
-            {inAnimation ? <AnimatedControls targetPosition={targetCameraPosition} onFinish={()=>{setInAnimation(false)}}/> : <OrbitControlsModified minDistance={1.07} maxDistance={2} rotateSpeed={0.25}/>}
+            {inAnimation ? <AnimatedControls targetPosition={targetCameraPosition} onFinish={()=>{setInAnimation(false)}}/> : <OrbitControlsModified minDistance={1.1} maxDistance={2} rotateSpeed={0.25}/>}
             {/* <OrbitControlsHotfix orbitRef={orbitRef}/> */}
         </Canvas>
     )

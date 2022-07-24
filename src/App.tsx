@@ -20,7 +20,7 @@ export default function App() {
                             setCameraPosition(cameraRef.current.position.clone().multiplyScalar(-1).toArray())
                         }
                     }}>
-                        antipode
+                        Find antipode
                     </button>
                 </div>
                 

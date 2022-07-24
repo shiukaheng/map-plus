@@ -4,7 +4,7 @@
 import umap
 import numpy as np
 
-reducer = umap.UMAP(output_metric='haversine') # Haversine for spherical distance
+reducer = umap.UMAP(output_metric='haversine', n_neighbors=50) # Haversine for spherical distance
 
 def mapify(vectorized_artworks):
     embedding = reducer.fit_transform(vectorized_artworks)

@@ -8,6 +8,7 @@ from iteration_utilities import flatten
 from sklearn.preprocessing import normalize
 import numpy as np
 from sklearn.preprocessing import StandardScaler, normalize, MinMaxScaler
+import json
 
 EMBEDDING_LANGUAGE = Literal["eng", "zh-tc", "averaged"]
 language_suffixes = {
@@ -21,6 +22,7 @@ def preprocess(
     embedding_language: EMBEDDING_LANGUAGE="eng",
     numerical_features=["beginDate", "endDate"],
     ml_string_features=["title", "medium", "creditLine"],
+    ml_string_list_features=["category"],
     identifying_features=["id"]
     ):
 
@@ -40,14 +42,26 @@ def preprocess(
     if embedding_language != "averaged":
         suffix = language_suffixes[embedding_language]
         for feature in ml_string_features:
+            print(f"Embedding string feature {feature}")
             sentences = objects[feature].tolist()
-            embeddings = deep_features.encode_sentence(sentences)
+            embeddings = deep_features.encode_sentences(sentences)
+            # embeddings = [deep_features.encode_sentence(s) for s in sentences]
             transformed_objects[feature+"Embedding"] = list(embeddings)
 
     if embedding_language == "averaged":
         raise NotImplementedError("Averaging not implemented yet")
 
     # TODO: Stage 2C: Embed multilang list of string features
+    if embedding_language != "averaged":
+        for feature in ml_string_list_features:
+            print(f"Embedding list of string feature {feature}")
+            sentences = objects[feature].tolist()
+            # Sentences are a list of unparsed JSON lists.
+            embeddings = [np.mean(deep_features.encode_sentences(json.loads(s)), axis=0) for s in sentences]
+            transformed_objects[feature+"Embedding"] = list(embeddings)
+    if embedding_language == "averaged":
+        raise NotImplementedError("Averaging not implemented yet")
+    # Stage 3: Normalize numerical features
 
     # TODO: Stage 2D: Integrate and embed constituents information
 

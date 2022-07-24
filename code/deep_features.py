@@ -5,6 +5,7 @@ from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 from typing import Literal
 import pandas as pd
+import functools
 
 roberta = SentenceTransformer("all-distilroberta-v1")
 # clip = SentenceTransformer("clip-ViT-B-32-multilingual-v1")
@@ -47,7 +48,11 @@ def encode_image(image):
 
 # Sentence vectorization (via siamese bert)
 
-def encode_sentence(sentence, model:MODEL="roberta"):
+def encode_sentences(sentences, model="roberta"):
+    return _encode_sentences(tuple(sentences), model)
+
+@functools.lru_cache(maxsize=512)
+def _encode_sentences(sentence, model:MODEL="roberta"):
     if model == "roberta":
         encoder = roberta
     elif model == "clip":
@@ -61,6 +66,9 @@ def encode_sentence(sentence, model:MODEL="roberta"):
     # Otherwise, just run the encoder on the sentence
     else:
         return encoder.encode(sentence)
+
+def encode_sentence(sentence, model="roberta"):
+    return _encode_sentences(sentence, model)
 
 # Lets not try word embeddings for now, as sentence embeddings allow for more flexibility.
 # def encode_words(word):

@@ -39,7 +39,7 @@ function ImageSlotSingle({imagePosition, image_url, visible=true, imageIndex, on
     const imageRef = useRef<Object3D>()
     useFrame(()=>{
         if (imageRef.current) {
-            const scalarScale = (camera.position.length() - 1) * 0.2 + gate(camera.position.length() - 1, 0.1, 0.5) * 0.02
+            const scalarScale = (camera.position.length() - 1) * 0.2 + gate(camera.position.length() - 1, 0, 0.15) * 0.075
             imageRef.current.scale.set(scalarScale, scalarScale, scalarScale)
         }
     })
@@ -66,7 +66,7 @@ export function ImageSlot({artworkIndex, data}:{artworkIndex: number, data: Artw
         const actualPostion = [data["mapify_x"][artworkIndex], data["mapify_y"][artworkIndex], data["mapify_z"][artworkIndex]] as [number, number, number]
         return {
             image_url: data["imageURL"][artworkIndex],
-            imagePosition: (actualPostion).map(x=>x*(1 + (Math.random() * 0.1))) as [number, number, number],
+            imagePosition: (actualPostion).map(x=>x*(1 + (Math.random() * 0.07))) as [number, number, number],
             position: actualPostion
         }
     }, [data, artworkIndex])
